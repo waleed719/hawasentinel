@@ -1,0 +1,37 @@
+# Switch to Gemini 2.5 Flash
+
+The user wants to transition the HawaSentinel autonomous agent from using Groq (Llama 3) to Google's Gemini 2.5 Flash model.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The implementation will switch the primary LLM from Groq to Gemini. This requires a valid Gemini API Key. The existing Groq integration will be replaced in the UI.
+
+## Proposed Changes
+
+### [HawaSentinelDemo]
+
+#### [MODIFY] [agent.py](file:///home/waleedqamar/Documents/hackaton/HawaSentinelDemo/agent.py)
+- Rename `groq_api_key` to `gemini_api_key` in `HawaSentinelAgent`.
+- Update `_call_llm` to use `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`.
+- Set model to `gemini-2.5-flash`.
+- Update error handling and docstrings to reflect Gemini usage.
+
+#### [MODIFY] [app.py](file:///home/waleedqamar/Documents/hackaton/HawaSentinelDemo/app.py)
+- Change sidebar input from "Groq API Key" to "Gemini API Key".
+- Update environment variable check to `GEMINI_API_KEY`.
+- Update UI labels (e.g., "Live Mode (Gemini)").
+- Update agent initialization to pass the Gemini key.
+
+#### [MODIFY] [tools.py](file:///home/waleedqamar/Documents/hackaton/HawaSentinelDemo/tools.py)
+- Review for any specific tool schema adjustments needed for Gemini (though OpenAI-compatible should work as-is).
+
+## Verification Plan
+
+### Automated Tests
+- I will run a manual check of the Streamlit app (if possible to run it and see the UI) to ensure the labels are updated.
+- I will mock the LLM response if I had a test suite, but here I'll verify the code logic.
+
+### Manual Verification
+- Verify that the `gemini-2.5-flash` string is used.
+- Verify the API endpoint URL is correct for Gemini's OpenAI-compatible service.

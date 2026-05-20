@@ -1,0 +1,7 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Implement usage tracking and display for Gemini API. This includes tracking tokens used and capturing rate limit headers if available. Improved error handling for 429 (Rate Limit) errors.",
+  "updatedAt":  "2026-05-16T18:06:43.179121135Z",
+  "version":  "1",
+  "requestFeedback":  true
+}

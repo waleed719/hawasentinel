@@ -1,0 +1,13 @@
+# Task List
+
+- [/] Project scaffolding & dependencies
+- [ ] Create `.env` and `.env.example`
+- [ ] Create `data/mockScenario.js`
+- [ ] Create tools: `iqair.js`, `nasaFirms.js`, `openMeteo.js`
+- [ ] Create `agents/baseAgent.js` (Ollama configuration)
+- [ ] Create `agents/schoolAgent.js`
+- [ ] Create `agents/hospitalAgent.js`
+- [ ] Create `agents/riderAgent.js`
+- [ ] Create `agents/orchestratorAgent.js`
+- [ ] Create `server.js` (endpoints & logic)
+- [ ] Verify everything runs with local Ollama

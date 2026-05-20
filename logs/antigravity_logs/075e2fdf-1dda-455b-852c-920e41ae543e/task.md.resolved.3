@@ -1,0 +1,4 @@
+- [x] Update `agent.py` to track tokens and capture headers
+- [x] Update `agent.py` error handling for 429 errors
+- [x] Update `app.py` to display cumulative usage and remaining limits
+- [x] Verify display of usage in the UI

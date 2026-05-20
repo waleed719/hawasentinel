@@ -1,0 +1,24 @@
+# Migration Walkthrough: Groq to Gemini 2.5 Flash
+
+I have successfully updated the HawaSentinel application to use Google's Gemini 2.5 Flash model instead of Groq's Llama 3.
+
+## Changes Made
+
+### 🤖 Agent Update (`agent.py`)
+- Updated the `HawaSentinelAgent` class to accept `gemini_api_key`.
+- Changed the LLM endpoint to Gemini's OpenAI-compatible service: `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`.
+- Set the model string to `gemini-2.5-flash`.
+- Updated all internal logs and error messages to reflect Gemini usage.
+
+### 🖥️ UI Update (`app.py`)
+- Replaced the "Groq API Key" input with "Gemini API Key".
+- Updated the environment variable source to `GEMINI_API_KEY`.
+- Updated status labels to show "Live Mode (Gemini)".
+- Ensured the agent is initialized with the new Gemini key.
+
+### 🔧 Tools (`tools.py`)
+- Verified that the tool schemas are compatible with Gemini's function calling expectations.
+
+## Verification
+- Checked all files for hardcoded "Groq" references and replaced them.
+- Verified the API endpoint URL for Gemini's OpenAI-compatible interface.
