@@ -1,3 +1,8 @@
-/hawasentinel_app/build
-/hawasentinel-backend/node_modules
-/hawasentinel-backend/.env
+# Build files
+hawasentinel_app/build/
+
+# Node modules
+hawasentinel-backend/node_modules/
+
+# Environment files
+hawasentinel-backend/.env
