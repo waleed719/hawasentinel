@@ -1,0 +1,38 @@
+# Implement Ledger UI Layer
+
+The goal is to implement the presentation layer for the Ledger feature, allowing users to view balances for all clients and vendors, see transaction details, and add new ledger entries.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The Ledger Homepage will display two distinct sections for Clients and Vendors, each with its own "Add Entry" button as requested.
+> Balances will be color-coded: Green for Clients and Red for Vendors.
+
+## Proposed Changes
+
+### Ledger Feature
+
+#### [NEW] [add_ledger_entry_dialog.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/ledger/presentation/widgets/add_ledger_entry_dialog.dart)
+Common dialog to add a new ledger entry. It will accept an optional pre-selected party.
+
+#### [NEW] [ledger_page.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/ledger/presentation/pages/ledger_page.dart)
+Main Ledger homepage showing lists of clients and vendors with their balances.
+
+#### [NEW] [ledger_details_page.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/ledger/presentation/pages/ledger_details_page.dart)
+Shows a list of all transactions for a specific party.
+
+## Open Questions
+
+- Should the balance shown on the homepage be the "Running Balance" (Total Credit - Total Debit) or something else?
+- For "Add Entry", should I auto-generate an invoice number if none is provided, or is it mandatory? (The entity has `required String invoiceNumber`)
+
+## Verification Plan
+
+### Automated Tests
+- Since this is a UI task, I will perform manual verification using the browser if possible, or ensure the code follows the established patterns in `vendor_dashboard_view.dart`.
+
+### Manual Verification
+- Verify that the Ledger page shows both clients and vendors.
+- Verify that the "Add Entry" button opens the dialog.
+- Verify that clicking a party navigates to the details page with correct transactions.
+- Verify color coding (Vendors: Red, Clients: Green).

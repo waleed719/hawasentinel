@@ -1,0 +1,61 @@
+# Goal Description
+
+Translate the Pretext Javascript layout engine into a native Dart package for Flutter (`flutter_pretext`). 
+
+The new package will implement pure arithmetic text layout iterators (e.g., `layoutNextLine()`, `walkLineRanges()`). This will enable advanced textual layouts (like text shaped around curved container images or perfect `max-content` shrink-wrapping logic) without triggering multiple expensive Flutter `TextPainter` or widget layout/rebuild binary searches. 
+
+## User Review Required
+
+> [!WARNING]
+> **Text Segmentation Approach:** 
+> In JS, Pretext relies on `Intl.Segmenter` for word boundaries. In Dart, we do not have an exact 1:1 `Intl.Segmenter` in the native core library. I propose using the official `characters` package for accurate Grapheme clusters (emojis, complex scripts) combined with our own Dart RegEx-based heuristics for word boundaries and punctuation merging. This guarantees it works 100% on iOS, Android, Web, Windows, macOS, and Linux without native FFI dependencies. Is this pure Dart heuristic approach okay with you?
+
+## Proposed Changes
+
+We will create a new Dart package with the following architecture:
+
+### flutter_pretext/lib/src
+#### [NEW] flutter_pretext/lib/src/analysis.dart
+*What it does:* Ports `src/analysis.ts`. Handles white-space normalization (`pre-wrap` vs `normal`), merging punctuation, detecting scripts requiring specific boundary logic (like CJK), and segmenting the text into chunks consisting of text, spaces, and breaks.
+
+#### [NEW] flutter_pretext/lib/src/measurement.dart
+*What it does:* Ports `src/measurement.ts`. Instead of `canvas.measureText`, we will use an off-screen, headless `TextPainter` and cache the `TextPainter.width` of individual segments. We will maintain a global (or per-instance) cache mapped by `TextStyle`.
+
+#### [NEW] flutter_pretext/lib/src/line_break.dart
+*What it does:* The core algorithmic logic. Tracks cursors (`LayoutCursor` class), measures cumulative line width against a `maxWidth`, and figures out exactly where strings should wrap based on the cached segment variables without string allocations.
+
+#### [NEW] flutter_pretext/lib/src/layout.dart
+*What it does:* Exposes the public API:
+- `prepare(text, style)`: Normalizes and records all widths.
+- `layout(prepared, maxWidth, lineHeight)`: Static box calculator.
+- `layoutNextLine(prepared, startCursor, maxWidth)`: Dynamic block wrapping parser used inside standard custom painters or multi-child layout delegates.
+
+## Proposed User-Facing Widgets
+
+Beyond the low-level calculation algorithms (`prepare`, `layoutNextLine`), we will ship several high-level, ready-to-use Flutter widgets out of the box so developers can reap the benefits immediately. 
+
+### 1. `ObstacleTextFlow` (or `FlowText` / `DynamicTextFlow`)
+- **Goal:** Allow text to dynamically shape itself around intersecting widgets or shapes, exactly as you described. 
+- **Problem it Solves:** Flutter’s standard text layouts are strictly rectangular. Wrapping text around a center image, floated circle, or multi-column newspaper layouts is usually very complex and hacky.
+- **Functionality:** Accepts a list of `Rect` (or paths) denoting "obstacles". During the paint phase, it calls `layoutNextLine()`, queries the current Y coordinate, calculates the remaining horizontal space next to the obstacles, and draws the string. No widget layouts are rebuilt; everything is pure, instantaneous math.
+
+### 2. `ShrinkWrapText`
+- **Goal:** Report the true *intrinsic* width of a wrapped paragraph of text back to the parent container.
+- **Problem it Solves:** In Flutter, if you put `Text` inside a `Container(width: 300)` and the text wraps, but the longest wrapped line is exactly `230px` wide, the Text widget continues to occupy `300px` of space. It leaves dead, empty space on the right side.
+- **Functionality:** Uses Pretext’s `walkLineRanges()` internally to quickly iterate over the virtual lines in a fast loop. It finds the maximum mathematically drawn width (`230px`), reports that as its `maxIntrinsicWidth`, and forces Flutter to mathematically "shrink-wrap" perfectly tight around the multi-line text block.
+
+### 3. `BalancedText`
+- **Goal:** Automatically balances line breaks so paragraphs look visually pleasing, avoiding single "orphan" words sitting alone on the last line.
+- **Problem it Solves:** `TextPainter` greedily fills lines until they hit `maxWidth` without looking ahead, which often leaves one word on the bottom line. Calculating optimal bounds using binary search in Flutter is typically slow because of UI rendering overhead.
+- **Functionality:** Because Pretext’s `layout(prepared, width)` calculation takes mere microseconds, this widget will binary-search the optimal `maxWidth` behind the scenes that creates visually balanced multiline paragraphs without dropping frames.
+
+## Open Questions
+- Do you want to initialize this repository inside a specific directory, or should I create the new Flutter package project right inside `/home/waleedqamar/Documents/crazy experiment/`?
+
+## Verification Plan
+### Automated Tests
+- Porting invariant tests from Pretext tracking basic line breaks against known widths and verifying total bounding boxes match.
+
+### Manual Verification
+- We will build an example Flutter application inside `flutter_pretext/example/` rendering paragraph text flowing dynamically around a floated, circular widget. 
+- You can run this app locally and verify the layout works and the text sizes match perfectly.

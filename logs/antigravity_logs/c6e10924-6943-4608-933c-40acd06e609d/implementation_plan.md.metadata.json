@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Proposed implementation plan for adding the document feature in the Case Detail Page. This covers creating a local-only document schema, data sources, providers, and updating the UI to pick/preview files using `file_picker` and `syncfusion_flutter_pdfviewer`.",
+  "updatedAt": "2026-04-18T16:44:03.647900370Z",
+  "requestFeedback": true
+}

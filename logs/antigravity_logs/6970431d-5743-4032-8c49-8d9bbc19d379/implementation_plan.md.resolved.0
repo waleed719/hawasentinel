@@ -1,0 +1,124 @@
+# Decouple Invoices & Receipts + Invoice Dashboard Enhancements
+
+## Background
+
+Currently, the system ties receipts directly to individual invoices. When a receipt is created, the user must select a specific unpaid invoice and make a payment against it. The invoice status (`paid/unpaid`) is derived from `invoice_payment_summaries`. This flow is being deprecated.
+
+The new flow:
+1. **Invoices** are standalone records with their own status: `dispatched` or `undispatched`. They still auto-create a **debit ledger entry** for the client on creation (this is preserved).
+2. **Receipts** are completely decoupled from invoices. A receipt is a payment made against a **client** (not an invoice). It creates a **credit ledger entry** for that client, reducing their balance.
+3. The `InvoicesDashboard` gets enhanced: update status button, view dialog, and sorting/filtering.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Invoice Status Change** — The two new invoice statuses are `dispatched` and `undispatched`. The existing `status` column in the `invoices` table currently stores `paid`/`unpaid`. We need to either:
+> - **Option A**: Migrate the DB column values from `paid`/`unpaid` → `dispatched`/`undispatched` and change the logic.
+> - **Option B**: Add a new separate `dispatch_status` column to avoid breaking existing payment queries.
+>
+> **Recommendation: Option A** — since we are fully decoupling receipts from invoices, the old `paid`/`unpaid` status is now meaningless. We'll use the existing `status` column for `dispatched`/`undispatched`.
+
+> [!WARNING]
+> **Receipt `allocations` field** — Currently receipts store `receipt_allocations` (invoice references). After decoupling, new receipts will have no invoice allocations. The `AddReceiptDialog` will be completely rewritten to remove invoice selection. Old receipts with allocations will still render fine since the field is optional in the entity.
+
+> [!CAUTION]
+> **Supabase RPC `create_receipt`** — The existing `create_receipt` RPC in Supabase handles allocations AND inserts a credit ledger entry. After decoupling, we need to either call a new/updated RPC that creates a receipt + credit ledger entry without requiring invoice allocations, OR call the receipt insert + ledger insert directly from the datasource. **I will update the datasource to insert directly (bypass the RPC for the new flow) and pass empty allocations** — this is safest without needing a DB migration of the RPC function.
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> Does the `create_receipt` Supabase RPC currently insert the credit ledger entry automatically? If yes, do you want me to keep using it (passing empty allocations) or switch to a direct insert approach? **Plan assumes: we call the existing RPC with an empty `p_allocations` array** and it still creates the credit ledger entry. If the RPC requires at least one allocation, we'll need to switch to a direct insert.
+
+---
+
+## Proposed Changes
+
+### 1. Invoice Status — Domain & Data Layer
+
+#### [MODIFY] [invoice_entity.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/domain/entities/invoice_entity.dart)
+- No struct changes needed. The `status` field is already a `String`.
+
+#### [MODIFY] [invoice_remote_datasource.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/data/datasource/invoice_remote_datasource.dart)
+- Change `createInvoice` to set initial `status` to `'undispatched'` (instead of `'unpaid'`).
+- Rewrite `updateInvoiceStatus` — remove the `UnsupportedError` and implement a real Supabase `.update({'status': status}).eq('id', id)` call.
+- In `_normalizeInvoiceRow`, stop computing `status` from `paidAmount`. Instead pass through the raw `status` from the DB (`dispatched`/`undispatched`).
+- Remove the `invoice_payment_summaries` join from `getInvoices()` — invoices are no longer tied to payments. `paidAmount` and `remainingAmount` can be set to `0` or removed from display.
+
+#### [MODIFY] [invoice_repository.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/domain/repositories/invoice_repository.dart)
+- No changes needed (already has `updateInvoiceStatus`).
+
+#### [MODIFY] [invoice_repository_impl.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/data/repositories/invoice_repository_impl.dart)
+- No changes needed.
+
+#### [MODIFY] [invoice_providers.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/presentation/providers/invoice_providers.dart)
+- Add a new `updateInvoiceStatus` Riverpod provider/action.
+
+---
+
+### 2. Receipt Flow — Decouple from Invoices
+
+#### [MODIFY] [add_receipt_dialog.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/receipts/presentation/pages/add_receipt_dialog.dart)
+- **Remove** invoice selection UI (the right panel "Unpaid Invoices" list and all invoice-related state).
+- **Remove** `_selectedInvoiceId`, `_setSelectedInvoice`, `_syncSelectedInvoice`.
+- The dialog becomes: select client → enter amount → pick payment method → date → account no → remarks → save.
+- On save, create `ReceiptEntity` with **empty allocations** and call `createReceiptProvider`.
+- After success, invalidate `getAllReceiptsProvider` and `getAllEntriesProvider` (ledger), but **NOT** `getAllInvoicesProvider`.
+- Layout becomes a single-column form (no longer a two-panel wide dialog).
+
+#### [MODIFY] [receipt_remote_datasource.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/receipts/data/datasources/receipt_remote_datasource.dart)
+- In `createReceipt`, pass `p_allocations: []` (empty array) so the RPC creates the receipt and credit ledger entry without invoice allocations.
+- *(No change needed if the RPC already handles empty arrays gracefully.)*
+
+#### [MODIFY] [receipts_dashboard.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/receipts/presentation/pages/receipts_dashboard.dart)
+- Remove the `ref.invalidate(getAllInvoicesProvider)` call from `_openCreateReceiptDialog` and the delete handler.
+- In `_ReceiptCard`, remove or update the "N invoices" allocation display — replace with just "Payment" since we're no longer tying to invoices.
+
+---
+
+### 3. Invoice Dashboard — Status Button, View Dialog & Sorting
+
+#### [MODIFY] [invoices_dashboard.dart](file:///home/waleedqamar/Documents/ledgerly/lib/features/invoices/presentation/pages/invoices_dashboard.dart)
+This is the most significant UI change. Rewrite to a `ConsumerStatefulWidget` with:
+
+**State:**
+- `_sortField`: enum `{ invoiceNumber, orderNumber, client }` 
+- `_sortAscending`: bool
+- `_filterClientId`: int? (null = show all)
+- `_searchController`: for text search
+
+**Invoice Card changes:**
+- Status badge now shows `DISPATCHED` (green) or `UNDISPATCHED` (orange) instead of paid/unpaid.
+- Add **"Update Status"** `IconButton` (e.g. `Icons.swap_horiz`) → shows a small `AlertDialog` with two options: Mark Dispatched / Mark Undispatched. Calls `updateInvoiceStatusProvider`.
+- Add **"View Invoice"** `IconButton` (e.g. `Icons.info_outline`) → shows a `Dialog` with important invoice details in a clean layout: invoice number, order number, client, issue date, PO, items table, subtotal, tax, shipping, grand total, status badge.
+
+**Sorting & Filtering toolbar:**
+- Row of sort buttons: "Invoice No ↑↓", "Order No ↑↓", "Client ↑↓"
+- Client filter: `DropdownButton` to filter by a specific client (or "All Clients")
+
+**New private widget:** `_InvoiceViewDialog` — modal with the invoice detail layout similar to ledger table style.
+
+---
+
+### 4. Ledger Auto-Entry on Receipt (Validation)
+
+The current `create_receipt` Supabase RPC **already** inserts a credit ledger entry. We verify this is still functioning correctly after passing empty allocations. No Dart-side ledger insert needed.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- `flutter build apk --debug` to confirm the project compiles cleanly after all edits.
+- Run `dart run build_runner build --delete-conflicting-outputs` if any `.g.dart` files need regeneration (only if we add new `@riverpod` annotations).
+
+### Manual Verification
+1. Create a receipt → confirm credit entry appears in the client's ledger page.
+2. Create an invoice → confirm debit entry still appears in ledger; invoice shows as `UNDISPATCHED`.
+3. Click "Update Status" → confirm it toggles to `DISPATCHED` and back.
+4. Click "View Invoice" → confirm dialog shows correct details.
+5. Sort invoices by invoice number, order number, and client name.
+6. Filter invoices by a specific client.

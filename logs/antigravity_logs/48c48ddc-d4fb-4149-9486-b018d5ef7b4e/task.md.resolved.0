@@ -1,0 +1,12 @@
+# Invoicing Module Implementation
+
+- `[/]` Modify `DB/client.sql` to append `invoices` and `invoice_items` schemas, and modify the `ledger` schema if necessary.
+- `[ ]` Add `pdf` and `printing` packages to `pubspec.yaml`
+- `[ ]` Create `InvoiceEntity` and `InvoiceItemEntity`
+- `[ ]` Create `InvoiceRemoteDatasource` and `InvoiceRepository`
+- `[ ]` Create `invoice_providers.dart`
+- `[ ]` Update `add_ledger_entry_dialog.dart` to conditionally show/hide invoice field and auto-fill it for clients using the maximum invoice ID.
+- `[ ]` Adapt `order_dashboard.dart` to add the `Invoices` dashboard link and `Generate Invoice` action.
+- `[ ]` Develop `invoices_dashboard.dart` featuring View, Print, Mark as Paid.
+- `[ ]` Develop `add_invoice_dialog.dart` to define new invoices linked against previous orders.
+- `[ ]` Implement `pdf_generator.dart` for exporting.

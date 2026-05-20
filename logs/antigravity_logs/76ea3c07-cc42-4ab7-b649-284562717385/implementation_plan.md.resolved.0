@@ -1,0 +1,41 @@
+# Implement Client Presentation Layer
+
+This plan outlines the steps to build the `ClientDashboardView` based on the provided "Client Roster" design.
+
+## User Review Required
+Please review the plan below. Note that I will use static placeholder values for revenue/orders/status as you mentioned they will come from the ORDER module. I will also incorporate the new `AppColors` extracted previously to ensure theme consistency.
+
+## Proposed Changes
+
+### Client Module: Presentation Layer
+
+#### [NEW] `lib/features/client/presentation/pages/client_dashboard_view.dart`
+Creates the main screen using a `ConsumerWidget` to integrate with `client_providers.dart`.
+- **Top Bar**: Search bar (placeholder), notifications, and "Create Record" / "New Client" buttons matching the mockup.
+- **Summary Cards**:
+  - **TOTAL CLIENTS**: Derived dynamically from `getAllClients` provider list length.
+  - **ACTIVE PROJECTS**: Placeholder statistic as per your instruction.
+  - **TOTAL REVENUE / AUM**: Placeholder statistic.
+- **Filters/Sort**: Tab-like row returning "All Clients", "Active", "Inactive" (currently static) and a "Sort by Revenue" button.
+- **Client List (`ListView`)**: Iterates through `getAllClients` state.
+  - **Avatar**: Initials extracted from `clientName`.
+  - **Title/Subtitle**: `clientName` and `Est. ${createdAt.year}`.
+  - **Contact**: Displays `contactNumber` and a placeholder email to match the design aesthetics.
+  - **Status**: Visual pill label (showing "Active" by default for now).
+  - **Financials**: Financial stats placeholder (e.g., "\$1.2M YTD REVENUE").
+
+### Main Navigation
+
+#### [MODIFY] `lib/sidebar.dart`
+- Import `ClientDashboardView`.
+- Replace the `const Center(child: Text('Clients Module'))` at index 0 with `const ClientDashboardView()`.
+
+## Open Questions
+- The Top App Bar in the design seems to span across the top, including above the sidebar. Your current `sidebar.dart` implements a side-by-side layout (Sidebar acting as left panel, content acting as right panel). I will build the top header *inside* the client dashboard view to fit cleanly in your existing architecture. Let me know if you want the layout shell completely overhauled instead!
+- What should clicking "New Client" do right now? Should I build a placeholder dialog for adding new clients, or just leave an empty `onPressed`?
+
+## Verification Plan
+### Manual Verification
+- Compile the app using `dart analyze` to ensure strict typing.
+- I will run the app using `npm run dev` equivalents (actually Flutter Web/Desktop compilation depending on platform) to ensure the UI renders without overflow errors.
+- Verify that `client_providers` successfully provide existing data to the view.

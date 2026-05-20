@@ -1,0 +1,43 @@
+# Dart-Only Verification & Enhancement Plan
+
+## User Review Required
+
+Since we are keeping the `flutter` dependency in `pubspec.yaml` for now and just removing the widget exports from `lib/flutter_pretext.dart`, I will resolve the errors in the `example/` folder by directly importing the widgets using `import 'package:flutter_pretext/src/widgets/...';` along with `// ignore_for_file: implementation_imports`. This avoids changing the root library further.
+
+## Proposed Changes
+
+### 1. Fix Example Folder Errors
+#### [MODIFY] `example/lib/*.dart`
+- Add `// ignore_for_file: implementation_imports`
+- Use direct imports to `package:flutter_pretext/src/widgets/...` to restore the existing examples (which broke when the exports were removed).
+
+### 2. Dart-Only Unit Tests
+#### [NEW] `test/layout_dart_only_test.dart`
+- Write a test using the standard `test` package layout (without `TestWidgetsFlutterBinding`).
+- Create a `MockFont` that provides string measurement logic purely in Dart.
+- Verify core layout behavior works successfully on the plain Dart VM.
+
+### 3. PDF.dart Integration Example
+#### [MODIFY] `example/pubspec.yaml`
+- Add `pdf` package dependency.
+#### [NEW] `example/lib/pdf_integration_example.dart`
+- Show how to generate a PDF page and draw text on it by wrapping `pdf.dart`'s font metrics within our `Font` interface. 
+- Implement `PdfFont implements Font`.
+
+### 4. Arabic Text Example
+#### [NEW] `example/lib/arabic_example.dart`
+- Create an example that tests the library's handling of right-to-left layout constraints using Arabic text.
+
+## Open Questions
+
+None at this time. Unless you spot any issues with the above tweaks, please provide approval and we will begin!
+
+## Verification Plan
+
+### Automated Tests
+- Run `dart test` to ensure tests execute purely on the Dart VM without `flutter test`.
+- Ensure there are no compilation errors when importing the package into a pure Dart project.
+
+### Manual Verification
+- Generate a `.pdf` file via the new example and verify its visual layout.
+- Run the Arabic text example to ensure `characters` and `layout` engine correctly handle the RTL content.

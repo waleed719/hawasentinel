@@ -1,0 +1,3 @@
+# Task Checklist
+
+- [ ] Fix RenderFlex overflow in [MissionCard](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/presentation/widgets/mission_card.dart#8-210) during Hero animation when popping from MissionPage to DashboardPage

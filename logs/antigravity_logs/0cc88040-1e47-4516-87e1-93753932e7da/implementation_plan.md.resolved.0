@@ -1,0 +1,39 @@
+# Integrating Google Mobile Ads Service
+
+This plan outlines the steps to integrate AdMob interstitial ads into the application. The system will pre-cache 2-3 ads to ensure they are ready to display immediately when needed. A `testmode` boolean will serve as a kill-switch (when `true`, ads are completely disabled).
+
+## Proposed Changes
+
+### Configuration
+- **`pubspec.yaml`**: Add the `google_mobile_ads` dependency.
+- **`android/app/src/main/AndroidManifest.xml`**: Add the Google Mobile Ads application ID metadata block with the Google test ID.
+
+### Ad Service
+#### [NEW] `lib/core/services/ad_service.dart`
+- Create an `AdService` class to manage Google Mobile Ads.
+- **Toggle**: Implement `bool testmode = true;`. When true, ads will not load and will not be displayed.
+- **Caching logic**: Pre-load up to 3 `InterstitialAd` instances in a list/queue in the background. As one is consumed, load another.
+- Expose methods: `initialize()`, `loadAd()`, and `showAdIfAvailable()`.
+- Expose a Riverpod provider `adServiceProvider`.
+
+### Application Initialization
+#### [MODIFY] `lib/main.dart`
+- Update `main()` to initialize the Mobile Ads SDK (`MobileAds.instance.initialize()`) before running the app.
+
+### Mission and Phase Logic
+#### [MODIFY] `lib/presentation/pages/mission_page.dart`
+- Inject `AdService` via Riverpod.
+- **Phase Completion**: In `_onPhaseComplete`:
+  - Count the number of currently completed phases.
+  - If completed phases >= 3, randomly decide to show an ad (e.g., 50% probability).
+- **Mission Completion**: If the entire mission is marked as completed, guarantee an ad presentation.
+
+## Open Questions
+- **"Randomly show ads"**: Is a 50% chance to show an ad after phase 3 and phase 4 acceptable, or do you prefer a different logic/probability?
+- **Test Mode Scope**: Do you want `testmode` to strictly disable all ads from showing (which is what I planned), or do you mean "show test ads instead of live ads"? 
+
+## Verification Plan
+1. Set `testmode = false` during testing to verify that ads load and show when running phases.
+2. Complete 3 phases, verify the random chance to show an ad.
+3. Complete the final phase, verify an ad always pops up at mission completion.
+4. Set `testmode = true` and verify no ads are shown under any circumstances.

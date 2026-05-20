@@ -74,12 +74,33 @@ export class BaseAgent {
           try {
             return JSON.parse(message.content);
           } catch (e) {
-            // In case it returns markdown JSON, try to strip it
-            const match = message.content.match(/```json\n([\s\S]*)\n```/) || message.content.match(/```([\s\S]*)```/);
-            if (match && match[1]) {
-              return JSON.parse(match[1]);
+            try {
+              // In case it returns markdown JSON, try to strip it
+              const match = message.content.match(/```json\n([\s\S]*?)\n```/) || message.content.match(/```([\s\S]*?)```/);
+              if (match && match[1]) {
+                return JSON.parse(match[1]);
+              }
+              
+              // Try to find the first { and last }
+              const start = message.content.indexOf('{');
+              const end = message.content.lastIndexOf('}');
+              if (start !== -1 && end !== -1 && end > start) {
+                const jsonStr = message.content.substring(start, end + 1);
+                return JSON.parse(jsonStr);
+              }
+            } catch (innerError) {
+              console.warn(`[${this.name}] Fallback parsing failed, using default safe JSON.`);
             }
-            throw e; // Reraise if still can't parse
+            
+            // Extreme fallback to prevent backend crash
+            console.warn(`[${this.name}] Severe JSON hallucination. Returning safe fallback.`);
+            return {
+              agent: this.name,
+              decision: "monitor",
+              confidence: 0.1,
+              action_taken: "System fallback triggered due to parsing error.",
+              error: true
+            };
           }
         }
       }

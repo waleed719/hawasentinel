@@ -1,0 +1,6 @@
+# Optimize Flutter Web Build Size
+
+- [ ] Investigate the cause of the 54 MB build size (e.g., large assets, videos)
+- [ ] Remove unused or large developer assets from the production build
+- [ ] Rebuild the Flutter web app with optimizations
+- [ ] Re-deploy the smaller build to Surge

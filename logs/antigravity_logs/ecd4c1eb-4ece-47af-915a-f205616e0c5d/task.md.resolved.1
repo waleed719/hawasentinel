@@ -1,0 +1,30 @@
+# Account Ledger Implementation Tasks
+
+- [x] **1. Database Updates**
+  - [x] Write SQL script to update `create_receipt` and `create_disbursement` RPCs to include `p_account_id`.
+  - [x] Write SQL function or update logic for Expense creation to deduct from petty cash.
+
+- [x] **2. Domain & Data Layer (Account Ledger)**
+  - [x] Update `account_entity.dart`.
+  - [x] Create `account_transaction_entity.dart`.
+  - [x] Create `account_ledger_repository.dart`.
+  - [x] Create `account_ledger_remote_datasource.dart`.
+  - [x] Create `account_ledger_repository_impl.dart`.
+
+- [x] **3. Presentation Layer (Account Ledger)**
+  - [x] Create `account_ledger_providers.dart`.
+  - [x] Create `account_dashboard.dart`.
+  - [x] Create `account_details_page.dart`.
+  - [x] Update `lib/sidebar.dart` to include Accounts.
+
+- [x] **4. Receipt Integration**
+  - [x] Update `AddReceiptDialog` to include Bank/Cash and Account selection.
+  - [x] Update `ReceiptRemoteDatasource` to pass `accountId`.
+  
+- [x] **5. Disbursement Integration**
+  - [x] Update `AddDisbursementDialog` to include Bank/Cash and Account selection.
+  - [x] Update `ReceiptRemoteDatasource` to pass `accountId` for disbursements.
+  
+- [x] **6. Expense Integration**
+  - [x] Update `ExpenseRemoteDatasource` to pass `accountId` (or handle automatically on DB side).
+  - [x] Update `AddExpenseDialog` if needed.

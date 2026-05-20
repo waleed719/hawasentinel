@@ -1,0 +1,6 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Implementation plan for writing test cases for Data and Domain layers of the case_management feature. Included the proposal to add mocktail for unit testing.",
+  "updatedAt":  "2026-04-02T09:38:29.256476941Z",
+  "requestFeedback":  true
+}

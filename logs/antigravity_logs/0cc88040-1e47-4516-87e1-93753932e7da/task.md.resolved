@@ -1,0 +1,7 @@
+- [x] Initialize timezone package in `main.dart` or `NotificationService`.
+- [x] Fix `NotificationService.scheduleDailyReminder` skip-logic and TZDateTime conversions.
+- [x] Inject `HomeWidget.saveWidgetData` and `updateWidget` into `StatsProvider`.
+- [x] Create `streak_widget_layout.xml` UI file.
+- [x] Create `streak_widget_info.xml` configuration file.
+- [x] Create `StreakAppWidgetProvider.kt` native Kotlin class.
+- [x] Register AppWidgetProvider in `AndroidManifest.xml`.

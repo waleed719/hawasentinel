@@ -1,0 +1,49 @@
+# [Goal Description]
+Replace the static [AnalyticalPhasePage](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/presentation/pages/phases/analytical_phase_page.dart#9-23) (which relies on external puzzles and manual self-reporting) with a built-in interactive puzzle system. 
+
+We will introduce two different puzzle games that rotate daily or are chosen randomly. The difficulty of these puzzles will automatically scale based on the user's `daysActive`. Upon completion, the game will automatically calculate a performance score and log the result for the stats screen.
+
+## Proposed Games
+
+1. **Lights Out (Grid Logic)**: 
+   - A classic analytical puzzle where tapping a tile toggles its state and the state of its adjacent neighbors. 
+   - The goal is to turn all lights "off".
+   - **Difficulty Scaling**: Starts at a 3x3 grid with few scrambled moves. Scales up to 4x4 and 5x5 grids with more complex starting scrambles as `daysActive` increases.
+
+2. **Sequence Decoder (Mastermind Variant)**:
+   - A logic deduction game where the user must guess a hidden sequence of symbols/colors. After each guess, they receive feedback on how many symbols were correct and in the right position, and how many are correct but in the wrong position.
+   - **Difficulty Scaling**: Starts with a 3-symbol code using 4 possible options. Scales up to a 5-symbol code with 6+ options as `daysActive` increases.
+
+## Proposed Changes
+
+### Presentation & Games Layer
+#### [MODIFY] [lib/presentation/pages/phases/analytical_phase_page.dart](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/presentation/pages/phases/analytical_phase_page.dart)
+- Remove the manual self-reporting UI (`Slider`, `Stars`, `Notes`).
+- Implement puzzle selection logic based on the current day or a random toggle.
+- Embed the active puzzle game view directly into the page.
+- Listen for game completion callbacks. Handle automatic score calculation (based on turns taken / success) and return the `PhaseResult` when `Navigator.pop` is called.
+
+#### [NEW] `lib/presentation/widgets/puzzles/lights_out_game.dart`
+- A new StatefulWidget holding the logic, grid rendering, and state for the "Lights Out" game. Takes a `difficulty` parameter to determine grid size.
+- Emits an `onComplete(int movesTaken)` callback.
+
+#### [NEW] `lib/presentation/widgets/puzzles/sequence_decoder_game.dart`
+- A new StatefulWidget holding the logic for the Mastermind-style game. Takes a `difficulty` parameter to determine the number of slots and options.
+- Emits an `onComplete(int attemptsTaken)` callback.
+
+### Data Layer
+#### [MODIFY] [lib/data/data_sources/local/local_content_service.dart](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/data/data_sources/local/local_content_service.dart)
+- Keep the current random puzzle structure if needed elsewhere, but modify/add methods if we need central puzzle logic scaling. We will primarily rely on the existing [getPuzzleDifficultyTier(daysActive)](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/domain/use_cases/calculate_difficulty_level.dart#19-26) from [CalculateDifficultyLevel](file:///run/media/waleedqamar/New%20Volume/flutterprojects/mind_forge/lib/domain/use_cases/calculate_difficulty_level.dart#4-56).
+
+## Verification Plan
+
+### Automated Tests
+- Run `flutter analyze` to ensure no syntax or typing errors were introduced.
+- (If tests exist) Run `flutter test` to ensure we didn't break phase routing.
+
+### Manual Verification
+- Launch the application on an emulator/device.
+- Navigate through Onboarding to trigger the Analytical Phase.
+- Verify that either **Lights Out** or **Sequence Decoder** renders correctly on screen.
+- Play a round of the loaded game. Verify the win condition triggers correctly.
+- Ensure the app navigates back automatically or allows the user to press "Complete" after winning, properly logging the stats to the results page without crashing.

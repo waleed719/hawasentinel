@@ -1,0 +1,5 @@
+- `[/]` Create Add Client Dialog UI inside `lib/features/client/presentation/pages/add_client_dialog.dart`.
+- `[ ]` Create Client Dashboard View inside `lib/features/client/presentation/pages/client_dashboard_view.dart`.
+- `[ ]` Update `lib/sidebar.dart` to link to the new Client view.
+- `[ ]` Perform `dart analyze` to ensure everything works properly.
+- `[ ]` Create a Walkthrough.

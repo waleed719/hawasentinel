@@ -1,0 +1,5 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Proposed plan to replace the static analytical phase with two interactive, logic-based puzzles (Lights Out and Symbol Decoder) that scale in difficulty based on the user's active days.",
+  "updatedAt":  "2026-03-12T11:26:08.865297107Z"
+}

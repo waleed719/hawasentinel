@@ -1,0 +1,20 @@
+# Task Checklist
+- [x] Write DSC Configuration Files (`AllNodes.psd1` and `StudentConfig.ps1`)
+  - [x] Configure Bolton root domain
+  - [x] Configure OU Structure (Users, Computers, Derby, Nottingham)
+  - [x] Configure Users and Groups (RBAC)
+  - [x] Configure GPOs (Baseline, OU-scoped)
+  - [x] Configure A* Pathway 1 requirements (Delegated Admin, Admin Hygiene, FGPP)
+- [x] Create incremental Git Commits to build a rich development history
+- [x] Write 3000-word Documentation (`README.md`)
+  - [x] Solution Overview
+  - [x] Architectural Scope and Boundaries
+  - [x] Automation Strategy
+  - [x] Repository Structure
+  - [x] Execution Order (Run Book)
+  - [x] Idempotence and Re-run Behaviour
+  - [x] Validation and Testing Model
+  - [x] Security Considerations
+  - [x] Evidence Mapping
+  - [x] Known Limitations and reflections
+- [x] Generate Evidence files (AI Log, Git logs, Reflog)

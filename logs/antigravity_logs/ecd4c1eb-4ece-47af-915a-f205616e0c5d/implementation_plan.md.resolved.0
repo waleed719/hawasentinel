@@ -1,0 +1,86 @@
+# Implementation Plan: Account & Accounts Ledger Module
+
+This plan details the implementation of the new Account Ledger module and its integration with Receipts, Disbursements, and Expenses modules to correctly track cash and bank balances.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The existing `create_receipt` and `create_disbursement` RPCs will need to be updated to accept an `account_id` and automatically insert a corresponding record into `account_transactions`. We will also need to update the Expense creation logic to deduct from the cash account. 
+> 
+> Please review the database updates section. Let me know if you prefer to run these DB scripts manually or if I should create Dart migrations for them.
+
+## Proposed Changes
+
+### 1. Database Updates
+To track cash/bank balances properly, we will modify the existing functions to log entries into `account_transactions`.
+- **Receipts**: Update `create_receipt` RPC. Add parameter `p_account_id INT`. After inserting the receipt and client ledger, insert a `credit` transaction into `account_transactions` with `reference_type = 'receipt'` and the receipt ID.
+- **Disbursements**: Update `create_disbursement` RPC. Add parameter `p_account_id INT`. Insert a `debit` transaction into `account_transactions` with `reference_type = 'disbursement'`.
+- **Expenses**: We will write a new function or update the dart code to insert a `debit` transaction into `account_transactions` for the default 'cash' account when an expense is added. We might need a configuration or a designated default cash account ID.
+
+### 2. Account Ledger Module (`lib/features/account_ledger`)
+
+#### Domain & Entities
+- **[MODIFY]** `domain/entities/account_entity.dart`: Ensure Freezed setup is complete. Add balance computation logic if needed.
+- **[NEW]** `domain/entities/account_transaction_entity.dart`: Create Freezed model for `account_transactions` table representing the ledger entries (Date, Credit, Debit, Remarks, etc.).
+- **[NEW]** `domain/repositories/account_ledger_repository.dart`: Interface for fetching accounts and their transactions.
+
+#### Data Layer
+- **[NEW]** `data/datasource/account_ledger_remote_datasource.dart`: Supabase queries to fetch accounts, their balances, and transaction history. Includes queries to compute the running balance dynamically or use the `balance` field.
+- **[NEW]** `data/repositories/account_ledger_repository_impl.dart`: Implementation of the repository.
+
+#### Presentation Layer
+- **[NEW]** `presentation/provider/account_ledger_providers.dart`: Riverpod providers for `getAllAccounts`, `getAccountTransactions(accountId)`, etc.
+- **[NEW]** `presentation/pages/account_dashboard.dart`: A data table view showing `Account Title | Bank Name | Current Balance`.
+- **[NEW]** `presentation/pages/account_details_page.dart`: Drill-down view showing a specific account's transaction history with columns `Date | Credit | Debit | Balance | Remarks`. We will calculate the running balance row by row.
+
+---
+
+### 3. Sidebar Integration
+
+#### [MODIFY] `lib/sidebar.dart`
+- Add an `Accounts` button with a suitable icon (e.g., `account_balance`).
+- Link it to the newly created `AccountDashboard` widget.
+
+---
+
+### 4. Receipts Integration
+
+#### [MODIFY] `lib/features/receipts/presentation/pages/add_receipt_dialog.dart`
+- Update the Payment Method dropdown to only have two main modes: `Cash` and `Bank Transfer`.
+- If `Bank Transfer` is selected, show a dropdown populated from `getAllAccountsProvider` (filtering for bank accounts).
+- Add radio buttons: "Online Transfer" vs "Cheque".
+- Pass the selected `account_id` and the chosen instrument (cheque/online) to the data layer.
+
+#### [MODIFY] `lib/features/receipts/data/datasources/receipt_remote_datasource.dart`
+- Update the parameters passed to the `create_receipt` RPC to include `p_account_id`.
+
+---
+
+### 5. Disbursements Integration
+
+#### [MODIFY] `lib/features/receipts/presentation/pages/add_disbursement_dialog.dart`
+- Similar to Receipts, update the UI to allow selecting an Account (Bank/Cash) from the Accounts DB.
+- Pass the `account_id` to the repository.
+
+#### [MODIFY] `lib/features/receipts/data/datasources/receipt_remote_datasource.dart`
+- Update the parameters passed to the `create_disbursement` RPC to include `p_account_id`.
+
+---
+
+### 6. Expenses Integration
+
+#### [MODIFY] `lib/features/expense/presentation/pages/add_expense_dialog.dart`
+- Expenses are typically cash. We will fetch the default "Cash" account from the DB.
+- If multiple cash accounts exist, we might need a dropdown, but assuming petty cash is the default.
+
+#### [MODIFY] `lib/features/expense/data/datasources/expense_remote_datasource.dart`
+- Update the `addExpense` function. We will insert the expense record and a corresponding `account_transactions` debit entry for the cash account in a single batch/RPC, or sequentially.
+
+## Verification Plan
+
+### Automated/Manual Verification
+1. Open the Accounts Dashboard from the sidebar and verify it loads data from the `ACCOUNTS` table.
+2. Click on an account to verify its ledger (running balance) loads correctly.
+3. Add a new Receipt via Bank Transfer: Ensure the Receipt is created, the Client ledger is updated, AND the bank account transaction ledger shows a `credit` entry.
+4. Add a new Disbursement via Cash: Ensure the Vendor ledger is updated, and the cash account transaction ledger shows a `debit` entry.
+5. Add an Expense: Ensure the Expense is recorded and the cash account is debited.

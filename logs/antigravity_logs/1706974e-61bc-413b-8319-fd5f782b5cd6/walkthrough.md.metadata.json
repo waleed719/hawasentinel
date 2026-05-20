@@ -1,0 +1,5 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary":  "Walkthrough of the completed RBAC implementation, explaining database changes, RLS policies, and Flutter UI updates.",
+  "updatedAt":  "2026-05-06T11:20:00.221622647Z"
+}

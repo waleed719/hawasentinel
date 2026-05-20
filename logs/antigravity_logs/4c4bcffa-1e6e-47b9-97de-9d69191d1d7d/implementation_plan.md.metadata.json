@@ -1,0 +1,7 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Abstracting the Flutter dependencies away from the core mathematical algorithms to allow universal Dart execution (PDFs, Web, Server).",
+  "updatedAt":  "2026-04-03T13:11:08.253588578Z",
+  "version":  "2",
+  "requestFeedback":  true
+}

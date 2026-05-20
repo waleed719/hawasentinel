@@ -1,0 +1,4 @@
+- `[x]` Update README.md to emphasize Antigravity's role
+- `[x]` Update baseAgent.js with JSON hallucination repair logic
+- `[x]` Update server.js and mockScenario.js for fast-path demo
+- `[x]` Update home_screen.dart with Before/After impact visuals

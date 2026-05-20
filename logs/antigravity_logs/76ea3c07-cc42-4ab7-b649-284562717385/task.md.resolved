@@ -1,0 +1,7 @@
+- `[ ]` Update `VenderEntity` with `isActive` field.
+- `[ ]` Run `dart run build_runner build -d`.
+- `[ ]` Update `vender_providers.dart` with `VenderFilterNotifier`.
+- `[ ]` Create `add_vender_dialog.dart` mapping fields & `isActive`.
+- `[ ]` Create `vender_dashboard_view.dart` mapping UI and filtering logic.
+- `[ ]` Update `sidebar.dart` linking Vendor UI.
+- `[ ]` Verify with `dart analyze`.

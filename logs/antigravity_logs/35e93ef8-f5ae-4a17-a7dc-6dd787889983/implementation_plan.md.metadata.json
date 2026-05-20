@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "A plan to verify the decoupling of Flutter, enforce Dart-only SDK compatibility, write pure Dart tests, and add comprehensive examples including a pdf.dart integration and an Arabic text example.",
+  "updatedAt": "2026-04-13T09:42:58.545116876Z",
+  "requestFeedback": true
+}

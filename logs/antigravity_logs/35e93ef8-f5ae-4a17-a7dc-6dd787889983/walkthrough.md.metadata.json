@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_WALKTHROUGH",
+  "summary": "A walkthrough explaining the newly created multi-package architecture, pure dart tests, and the new dart_pretext and pdf.dart examples along with RTL support breakdown.",
+  "updatedAt": "2026-04-13T10:12:13.254908349Z"
+}

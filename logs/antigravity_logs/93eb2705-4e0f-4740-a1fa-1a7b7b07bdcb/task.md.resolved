@@ -1,0 +1,6 @@
+- [x] Analyze undefined_identifier errors in usecase_providers.dart
+- [x] Fix missing imports in usecase_providers.dart
+- [ ] Fix missing imports in main.dart and infrastructure_providers.dart (HiveBoxes)
+- [ ] Fix missing imports in datasource_providers.dart and repository_providers.dart
+- [ ] Fix test/widget_test.dart using CaseTrackerApp instead of MyApp
+- [ ] Run build_runner again

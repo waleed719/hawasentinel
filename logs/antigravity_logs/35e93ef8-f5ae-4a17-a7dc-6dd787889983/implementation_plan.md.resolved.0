@@ -1,0 +1,54 @@
+# Dart-Only Verification & Enhancement Plan
+
+This plan structures the tasks required to fully verify your Dart-only migration, enforce it at the package level, write pure unit tests, and add the new examples you requested.
+
+## User Review Required
+
+> [!IMPORTANT]  
+> While you have successfully decoupled the **core layout engine** (via the `Font` interface), your `pubspec.yaml` still explicitly depends on the `flutter` SDK, and the main `flutter_pretext.dart` file still exports the Flutter widgets (like `ShrinkWrapText`). 
+> 
+> To make this a **true** Dart-only package (that can run natively on servers or environments without Flutter installed), we need to decide how to handle the existing Flutter widgets:
+> **Option A:** Completely strip Flutter from this package. We remove the widgets (or move them to an `example` or a new separate `flutter_pretext` repository), and rename this package's `pubspec.yaml` to just `pretext`.
+> **Option B:** Keep the flutter dependency in `pubspec.yaml` but ensure a clean separation (e.g. `lib/core.dart` for Dart-only logic). *Note: This means the package still strictly requires a Flutter environment to install.*
+> 
+> For this plan, I am assuming **Option A** (or that the core engine is extracted) since you mentioned "purely uses dart". Please let me know how you'd like to handle the existing `src/widgets/`!
+
+## Proposed Structure & Changes
+
+### Phase 1: Enforce Dart-Only Package
+- **Verification**: The core files (`layout.dart`, `measurement.dart`, `font.dart`) are already decoupled from Flutter. 
+- **Refactoring**: 
+  - Update `pubspec.yaml` to remove `flutter` dependencies and `flutter_test`.
+  - Add the standard `test` package.
+  - Remove Flutter `import` statements and move `lib/src/widgets/` to a separate location (or exclude them from the core Dart library).
+
+### Phase 2: Pure Dart Unit Tests
+- Create `test/layout_dart_test.dart` using the standard `test` package (instead of `flutter_test`).
+- Implement a dummy `MockFont` that accurately simulates grapheme width measurement strictly in Dart.
+- Verify line-breaking, width measurements, and layouts using `dart test`.
+
+### Phase 3: `pdf.dart` Example
+- **Dependency**: Add the `pdf` package to the examples directory.
+- **Implementation**: Create `example/lib/pdf_integration_example.dart`.
+- Write an adapter class (e.g. `PdfFont implements Font`) that hooks into `pdf.dart`'s font measurement metrics.
+- Demonstrate rendering pretext lines into a PDF document natively.
+
+### Phase 4: Arabic Text Example
+- Create `example/lib/arabic_example.dart`.
+- Set up an example layout passing an Arabic string (RTL scenario) to the layout engine.
+- Verify grapheme isolation and RTL rendering compatibility.
+
+## Open Questions
+
+1. **Widget Migration:** Should I delete the Flutter widgets from this package, or move them into the `example` project so they aren't lost? 
+2. **Package Name:** Since it's purely Dart, should we rename the `name:` in `pubspec.yaml` from `flutter_pretext` to `pretext`?
+
+## Verification Plan
+
+### Automated Tests
+- Run `dart test` to ensure tests execute purely on the Dart VM without `flutter test`.
+- Ensure there are no compilation errors when importing the package into a pure Dart project.
+
+### Manual Verification
+- Generate a `.pdf` file via the new example and verify its visual layout.
+- Run the Arabic text example to ensure `characters` and `layout` engine correctly handle the RTL content.

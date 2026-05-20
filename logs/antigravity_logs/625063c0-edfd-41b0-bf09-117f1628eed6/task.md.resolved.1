@@ -1,0 +1,5 @@
+- [x] Implement `AddLedgerEntryDialog` in `lib/features/ledger/presentation/widgets/add_ledger_entry_dialog.dart`
+- [x] Implement `LedgerPage` in `lib/features/ledger/presentation/pages/ledger_page.dart`
+- [x] Implement `LedgerDetailsPage` in `lib/features/ledger/presentation/pages/ledger_details_page.dart`
+- [x] Add Ledger page to `MainLayout` sidebar in `lib/sidebar.dart`
+- [x] Perform manual verification and styling polish

@@ -1,0 +1,36 @@
+# Task: Raw Material Refactor + Unified Inventory
+
+## Phase 1: Database Schema
+- [ ] Update `DB/client.sql` with new inventory_transactions schema + fix raw_material table
+
+## Phase 2: Shared Core Inventory Layer
+- [ ] `lib/core/inventory/domain/entities/inventory_transaction_entity.dart`
+- [ ] `lib/core/inventory/domain/repositories/inventory_repository.dart`
+- [ ] `lib/core/inventory/data/datasource/inventory_remote_datasource.dart`
+- [ ] `lib/core/inventory/data/repositories/inventory_repository_impl.dart`
+- [ ] `lib/core/inventory/presentation/providers/inventory_providers.dart`
+- [ ] `lib/core/inventory/presentation/providers/inventory_providers.g.dart` (via build_runner)
+
+## Phase 3: Raw Material Module — Full Rewrite
+- [ ] `domain/entities/raw_material_entity.dart` (rename + new fields)
+- [ ] `domain/repositories/raw_material_repository.dart` (rename)
+- [ ] `data/datasource/raw_material_remote_datasource.dart` (rename + price field)
+- [ ] `data/repositories/raw_material_repository_impl.dart` (rename)
+- [ ] Delete old inventory datasource/repo from raw_material (replaced by core)
+- [ ] `presentation/providers/raw_material_providers.dart` (own providers, no products imports)
+- [ ] `presentation/pages/raw_material_dashboard.dart` (proper labels/fields)
+- [ ] `presentation/pages/raw_material_detail_page.dart` (use core inventory)
+- [ ] `presentation/pages/add_raw_material_dialog.dart` (price field)
+
+## Phase 4: Products Module — Inventory Layer Update
+- [ ] `domain/entities/inventory_transaction_entity.dart` (new schema fields)
+- [ ] `domain/repositories/product_inventory_repository.dart` (updated signatures)
+- [ ] `data/datasource/inventory_remote_datasource.dart` (item_id + item_type)
+- [ ] `data/repositories/product_invevtory_repository_impl.dart` (updated calls)
+- [ ] `presentation/providers/product_providers.dart` (updated signatures)
+- [ ] `presentation/pages/product_detail_page.dart` (notes vs remarks)
+- [ ] `presentation/pages/product_dashboard.dart` (notes vs remarks)
+
+## Phase 5: Build & Verify
+- [ ] Run `flutter pub run build_runner build --delete-conflicting-outputs`
+- [ ] Run `flutter analyze`

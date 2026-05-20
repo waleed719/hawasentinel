@@ -1,0 +1,7 @@
+# Optimize Flutter Web Build Size
+
+- [x] Investigate the cause of the 54 MB build size (e.g., large assets, videos)
+  - Found: Canvaskit is 25MB (normal, browser only downloads 7MB), world1.png is 4.3MB, and music files total 10MB.
+- [x] Remove unused or large developer assets from the production build
+- [x] Rebuild the Flutter web app with optimizations
+- [x] Re-deploy the smaller build to Surge

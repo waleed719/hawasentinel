@@ -1,0 +1,57 @@
+# [Goal Description]
+Replace the static `AnalyticalPhasePage` (which relies on external puzzles and manual self-reporting) with a built-in interactive puzzle system. 
+
+We will introduce two different puzzle games that rotate daily or are chosen randomly. The difficulty of these puzzles will automatically scale based on the user's `daysActive`. Upon completion, the game will automatically calculate a performance score and log the result for the stats screen.
+
+## Proposed Games
+
+1. **Lights Out (Grid Logic)**: 
+   - A classic analytical puzzle where tapping a tile toggles its state and the state of its adjacent neighbors. 
+   - The goal is to turn all lights "off".
+   - **Difficulty Scaling**: Starts at a 3x3 grid with few scrambled moves. Scales up to 4x4 and 5x5 grids with more complex starting scrambles as `daysActive` increases.
+
+2. **Sequence Decoder (Mastermind Variant)**:
+   - A logic deduction game where the user must guess a hidden sequence of symbols/colors. After each guess, they receive feedback on how many symbols were correct and in the right position, and how many are correct but in the wrong position.
+   - **Difficulty Scaling**: Starts with a 3-symbol code using 4 possible options. Scales up to a 5-symbol code with 6+ options as `daysActive` increases.
+
+## Proposed Changes
+
+## Proposed Gameplay Flow
+
+1. **Auto-Start & Selection**: When the user taps the Analytical Phase, they will **not** see a list. The app will immediately present a single random logic game chosen from the available pool (currently Lights Out and Sequence Decoder).
+2. **Dynamic Pool Expansion**: As you add more games in the future, we simply add them to the pool array in `AnalyticalPhasePage`. The game selection scale is purely random, but the *difficulty settings* of the randomly chosen game are explicitly tied to the user's `daysActive`.
+
+## Data Logging Process
+
+When the user solves the puzzle:
+1. The minigame widget calculates a `successRating` (1 to 5) internally based on how many moves/attempts the user took versus the optimal answer.
+2. The `AnalyticalPhasePage` listens for the `onComplete(successRating)` callback from the minigame.
+3. Upon receiving the callback, it fires the standard `_completePhase()` logic already present in the app:
+   - It converts the success rating into an experience `score` (e.g. 5 stars = 100 score).
+   - It builds the `PhaseResult` tracking object.
+   - It triggers `Navigator.pop(context, result)` returning the user to the Mission screen, where the score is naturally folded into the user's global statistics tracking.
+
+#### [NEW] `lib/presentation/widgets/puzzles/lights_out_game.dart`
+- A new StatefulWidget holding the logic, grid rendering, and state for the "Lights Out" game. Takes a `difficulty` parameter to determine grid size.
+- Emits an `onComplete(int movesTaken)` callback.
+
+#### [NEW] `lib/presentation/widgets/puzzles/sequence_decoder_game.dart`
+- A new StatefulWidget holding the logic for the Mastermind-style game. Takes a `difficulty` parameter to determine the number of slots and options.
+- Emits an `onComplete(int attemptsTaken)` callback.
+
+### Data Layer
+#### [MODIFY] `lib/data/data_sources/local/local_content_service.dart`
+- Keep the current random puzzle structure if needed elsewhere, but modify/add methods if we need central puzzle logic scaling. We will primarily rely on the existing `getPuzzleDifficultyTier(daysActive)` from `CalculateDifficultyLevel`.
+
+## Verification Plan
+
+### Automated Tests
+- Run `flutter analyze` to ensure no syntax or typing errors were introduced.
+- (If tests exist) Run `flutter test` to ensure we didn't break phase routing.
+
+### Manual Verification
+- Launch the application on an emulator/device.
+- Navigate through Onboarding to trigger the Analytical Phase.
+- Verify that either **Lights Out** or **Sequence Decoder** renders correctly on screen.
+- Play a round of the loaded game. Verify the win condition triggers correctly.
+- Ensure the app navigates back automatically or allows the user to press "Complete" after winning, properly logging the stats to the results page without crashing.

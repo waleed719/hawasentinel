@@ -1,0 +1,10 @@
+# DPS Module Task List
+
+- [ ] Create `DB/dps_schema.sql` migration script including RPC
+- [ ] Create Flutter models (`dps_models.dart`) using Freezed
+- [ ] Create `DpsRepository` (`dps_repository.dart`)
+- [ ] Create Riverpod state management (`dps_providers.dart`)
+- [ ] Create `DpsDashboard` UI (`dps_dashboard.dart`)
+- [ ] Create `AddDpsReportPage` UI (`add_dps_report_page.dart`)
+- [ ] Update `sidebar.dart` to include DPS navigation
+- [ ] Verify UI and functionality locally

@@ -1,0 +1,6 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_TASK",
+  "summary":  "Tracking the decoupling of Flutter from the core engine",
+  "updatedAt":  "2026-04-03T13:12:50.343114769Z",
+  "version":  "7"
+}

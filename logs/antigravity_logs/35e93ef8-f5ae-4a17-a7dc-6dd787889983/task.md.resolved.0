@@ -1,0 +1,11 @@
+# Workspace Separation & Example tasks
+
+- [/] Brief the user on Arabic (RTL) handling in the codebase.
+- [ ] Create `dart_pretext` package folder and pure Dart `pubspec.yaml`.
+- [ ] Move core algorithm files from `flutter_pretext/lib/src` to `dart_pretext/lib/src`.
+- [ ] Add path dependency to `flutter_pretext/pubspec.yaml` pointing to `dart_pretext`.
+- [ ] Re-export the core package in `flutter_pretext.dart`.
+- [ ] Write comprehensive pure Dart unit tests for `dart_pretext`.
+- [ ] Build the standalone `pdf.dart` server example in `dart_pretext/example`.
+- [ ] Create the Arabic RTL example in `flutter_pretext/example`.
+- [ ] Final verification of both packages.

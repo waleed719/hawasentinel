@@ -1,0 +1,45 @@
+# Implementation Plan: Client State, Updating, and Deletion
+
+This plan handles introducing dynamic database fields to support "Active/Inactive" status filtering, alongside integrating edit and delete functionality for individual clients. 
+
+## User Review Required & Manual Steps
+> [!WARNING]
+> Because you are using Supabase as your backend, changing the `ClientEntity` properties requires you to update the specific table schema on the database before changes will succeed.
+>
+> **Action Required to prevent crashes before/after this update**: 
+> You must manually add a new column to your `clients` table in Supabase:
+> - Name: `is_active`
+> - Type: `boolean`
+> - Default Value: `true`
+> Let me know if you have already done this!
+
+## Proposed Changes
+
+### Domain & Data Updates
+#### [MODIFY] `lib/features/client/domain/entities/client_entity.dart`
+- Add `@JsonKey(name: 'is_active', defaultValue: true) required bool isActive` to the `ClientEntity` factory.
+
+#### [COMMAND] `dart run build_runner build -d`
+- After modifying the entity, I will regenerate the `freezed` and `g.dart` mapping files so `fromJson` and `toJson` capture the new `is_active` field appropriately.
+
+### Presentation Updates
+#### [NEW] Local Provider (in `lib/features/client/presentation/providers/client_providers.dart`)
+- Define an `enum ClientFilter { all, active, inactive }` and a StateProvider `final clientFilterProvider = StateProvider<ClientFilter>((ref) => ClientFilter.all);` to handle tab filtering.
+
+#### [MODIFY] `lib/features/client/presentation/pages/client_dashboard_view.dart`
+- Update the layout to use `ref.watch(clientFilterProvider)` to filter the list prior to rendering based on `client.isActive`.
+- Update the "Filter Pills" (the 'All', 'Active', 'Inactive' buttons) to switch this internal provider state.
+- Add trailing action buttons (an Edit icon and a Delete icon) onto each Client card.
+  - Delete will summon a `AlertDialog` confirming they wish to delete, then call the existing `.deleteClient()` hook and invalidate the provider.
+  - Edit will launch `AddClientDialog` utilizing its new parameters.
+
+#### [MODIFY] `lib/features/client/presentation/pages/add_client_dialog.dart`
+- Update constructor to take `final ClientEntity? clientToEdit;`.
+- Use the `initState` to pre-fill controllers.
+- Add a new `SwitchListTile` to toggle `isActive` directly from this modal form.
+- Use `clientRepository.updateClient()` instead of `.addClient()` if editing.
+
+## Verification Plan
+1. Ensure `dart run build_runner build` completes successfully.
+2. Confirm the UI compiles without errors via `dart analyze`.
+3. Inform user to confirm the schema alteration on Supabase end to ensure real runtime API saves pass!

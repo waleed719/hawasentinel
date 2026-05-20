@@ -657,6 +657,8 @@ class _AgentActionsSection extends StatelessWidget {
           badgeBg: AppTheme.error,
           pulsing: false,
           iconColor: AppTheme.error,
+          beforeState: 'Schools Open, Hospitals Unprepared',
+          afterState: '8 Schools Closed, 25 Beds Reallocated',
         ),
         const SizedBox(height: 12),
         _ActionCard(
@@ -670,6 +672,8 @@ class _AgentActionsSection extends StatelessWidget {
           badgeBg: AppTheme.tertiaryContainer,
           pulsing: true,
           iconColor: AppTheme.tertiaryContainer,
+          beforeState: 'Unmonitored Crop Burning',
+          afterState: '1500 Farmers Warned, Patrols Dispatched',
         ),
       ],
     );
@@ -686,6 +690,8 @@ class _ActionCard extends StatelessWidget {
   final Color badgeBg;
   final bool pulsing;
   final Color iconColor;
+  final String? beforeState;
+  final String? afterState;
 
   const _ActionCard({
     required this.agentName,
@@ -697,6 +703,8 @@ class _ActionCard extends StatelessWidget {
     required this.badgeBg,
     required this.pulsing,
     required this.iconColor,
+    this.beforeState,
+    this.afterState,
   });
 
   @override
@@ -763,6 +771,62 @@ class _ActionCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+                if (beforeState != null && afterState != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F2937).withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF374151), width: 0.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'IMPACT SIMULATION',
+                          style: GoogleFonts.jetBrainsMono(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                beforeState!,
+                                style: GoogleFonts.inter(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Icon(Icons.arrow_forward_rounded, size: 14, color: AppTheme.primary),
+                            ),
+                            Expanded(
+                              child: Text(
+                                afterState!,
+                                style: GoogleFonts.inter(
+                                  color: AppTheme.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,

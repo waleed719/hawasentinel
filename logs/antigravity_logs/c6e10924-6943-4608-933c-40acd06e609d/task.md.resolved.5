@@ -1,0 +1,15 @@
+# Document Feature Implementation Tasks
+
+- [x] Add `path_provider` package to `pubspec.yaml`
+- [x] Create `DocumentEntity` (`lib/features/case_management/domain/entities/document_entity.dart`)
+- [x] Create `DocumentModel` (`lib/features/case_management/data/models/document_model.dart`)
+- [x] Add `HiveBoxes.documents` constant in `lib/features/case_management/data/datasource/local_datasource_impl.dart`
+- [x] Update `CaseLocalDataSource` interface and `CaseLocalDataSourceImpl` to support Hive document storage if applicable, or create `DocumentLocalDataSource` interface and implementation.
+- [x] Create `DocumentRepository` interface and implementation (`lib/features/case_management/domain/repositories/document_repository.dart` / `lib/features/case_management/data/repositories/document_repository_impl.dart`)
+- [x] Define Use Cases (`get_documents_for_case.dart`, `attach_document.dart`, `delete_document.dart`)
+- [ ] Setup dependencies in `lib/core/provider/` (if any manual wiring is needed for local data sources)
+- [ ] Create `DocumentNotifier` (`lib/features/case_management/presentation/providers/document_notifier.dart`)
+- [ ] Create `PdfViewerPage` (`lib/features/case_management/presentation/pages/pdf_viewer_page.dart`)
+- [ ] Update `AppRoutes` (`lib/core/navigation/app_routes.dart`) to add `PdfViewerPage` route
+- [ ] Update `CaseDetailPage` -> `_DocumentsTab` with Document picking, checking `file_picker`, copying via `path_provider`, saving via `documentProvider`, and viewing list.
+- [ ] Run `flutter analyze` and resolve any issues

@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Detailed implementation plan for:\n1. Properly isolating the raw_material module (its own entities, repos, providers - no cross-imports from products)\n2. Migrating both products and raw_material modules to a unified inventory_transactions schema with item_id + item_type\n3. Creating a shared core inventory layer reusable by both modules and future BOM/Invoice modules\n4. Answering the client's analytics question about PostgreSQL/Supabase suitability for analysis tools\n\nIncludes database migration SQL, file-by-file change list, future-proofing strategy, and verification steps.",
+  "updatedAt": "2026-04-26T06:36:14.714341808Z",
+  "requestFeedback": true
+}

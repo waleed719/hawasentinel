@@ -1,0 +1,36 @@
+# Multi-User Company Data Isolation Plan
+
+Since `user_id` was originally designed to isolate different users' data, opening up the RLS to `USING (true)` means all users across the entire system see everyone's data. 
+
+To allow a single company to have multiple users (e.g., an admin and an accountant) while keeping their data isolated from *other* companies, we need to link the accountant to the admin's `user_id`.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Proposed Concept:** We will designate the `user_id` of the `master` account as the main "Company ID". 
+> 
+> 1. We will add a `company_owner_id` column to the `employees` table.
+> 2. The `master` employee record will have its `company_owner_id` set to its own `user_id`.
+> 3. The `accountant` employee record will have its `company_owner_id` set to the `master`'s `user_id`.
+> 4. All tables (receipts, orders, etc.) will use this `company_owner_id` to filter data, ensuring the accountant sees the exact same data as the master.
+
+## Open Questions
+
+> [!NOTE]
+> 1. Does this architecture make sense to you? 
+> 2. Do you want me to write a script that automatically alters the default value of the `user_id` column on all your tables so that when an accountant creates a new invoice, it is safely saved under the master's `user_id`?
+
+## Proposed Changes
+
+### 1. Database Schema (`DB/employee.sql`)
+- Add `company_owner_id UUID NOT NULL` to the `employees` table.
+
+### 2. RLS Policies Update (`DB/rbac_policies.sql`)
+- Create a function `get_my_company_id()` that returns the user's `company_owner_id`.
+- Update the RLS script so that `SELECT`, `UPDATE`, `DELETE` are restricted using: `USING (user_id = get_my_company_id())`.
+- Update the Default values of `user_id` across all tables to `DEFAULT get_my_company_id()`.
+
+## Verification Plan
+1. We will run the updated script.
+2. I will provide you with the exact SQL queries to insert both `admin@gmail.com` and `accounts@gmail.com` into the `employees` table, properly linked together.
+3. You will log in as the accountant and verify you only see the admin's data.

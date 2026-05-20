@@ -1,0 +1,8 @@
+# Task List
+
+- `[/]` **1. Invoice datasource** — Change initial status to `undispatched`, fix `updateInvoiceStatus` (remove UnsupportedError), stop deriving status from payment summaries
+- `[ ]` **2. Invoice providers** — Add `updateInvoiceStatus` provider
+- `[ ]` **3. AddReceiptDialog** — Rewrite: remove invoice selection, client-only receipt form
+- `[ ]` **4. ReceiptsDashboard** — Remove `getAllInvoicesProvider` invalidation
+- `[ ]` **5. InvoicesDashboard** — Full rewrite: stateful, sort/filter, Update Status button, View Invoice dialog
+- `[ ]` **6. Build check** — Verify `flutter build` / `flutter analyze` passes

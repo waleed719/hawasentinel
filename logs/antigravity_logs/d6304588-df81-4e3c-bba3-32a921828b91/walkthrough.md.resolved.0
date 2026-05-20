@@ -1,0 +1,24 @@
+# Invoice and Ledger Updates
+
+## Modifications Made:
+
+1. **Invoice Status Update (Dart Layer)**:
+   - Modified `updateInvoiceStatus` in `lib/features/invoices/data/datasource/invoice_remote_datasource.dart`.
+   - Now, when an invoice status is changed to `paid`, the system automatically fetches the invoice details and inserts a `credit` entry into the ledger for that client.
+   - This deducts the invoice amount from the client's total balance. Appropriate remarks (`'Payment received for invoice #<invoice_number>'`) are added to the transaction log.
+   - Note: Invoice *generation* already included the logic to create a `debit` entry for the invoiced amount, which increases the client's balance.
+
+2. **Order Ledger Trigger Removal (Database Layer)**:
+   - Evaluated the frontend codebase and confirmed that Flutter doesn't manually insert ledger records when an order is created. The current behavior (adding to the ledger on order creation) is handled automatically by a database trigger in Supabase.
+   - Provided a SQL script to cleanly remove this behavior.
+
+## Actions Required
+
+Since the order-to-ledger link is driven by the database, please execute the SQL script created to stop orders from changing the client ledger automatically.
+
+> [!IMPORTANT]
+> Please run the following script in your Supabase SQL Editor to drop the database trigger that generates a ledger entry when an order is inserted:
+>
+> **Script**: [remove_order_to_ledger_trigger.sql](file:///home/waleedqamar/Documents/ledgerly/DB/remove_order_to_ledger_trigger.sql)
+
+Once this script is run, placing an order will no longer alter the client's ledger balance. The balance will only update during **invoice generation** (debit) and **invoice payment** (credit).

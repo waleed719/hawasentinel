@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import { getAQIData } from './tools/iqair.js';
 import { getFiresData } from './tools/nasaFirms.js';
 import { getWindData } from './tools/openMeteo.js';
-import { NOV_2024_EPISODE } from './data/mockScenario.js';
+import { NOV_2024_EPISODE, FAST_REPLAY_MOCK } from './data/mockScenario.js';
 import { runOrchestrator } from './agents/orchestratorAgent.js';
 
 dotenv.config();
@@ -38,6 +38,11 @@ app.all('/api/simulate', async (req, res) => {
       return res.json({
         status: "success",
         data: NOV_2024_EPISODE
+      });
+    } else if (scenario === 'hazardous') {
+      return res.json({
+        status: "success",
+        data: FAST_REPLAY_MOCK
       });
     } else {
       // Default to mock

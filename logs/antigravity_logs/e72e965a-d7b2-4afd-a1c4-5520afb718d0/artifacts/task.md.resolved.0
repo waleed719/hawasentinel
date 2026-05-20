@@ -1,0 +1,12 @@
+# Unit Test Implementation Tasks
+
+- [ ] Write `CaseEntity` tests (`test/features/case_management/domain/entities/case_entity_test.dart`)
+- [ ] Write `CaseModel` tests (`test/features/case_management/data/models/case_model_test.dart`)
+- [ ] Write `CaseClientModel` tests (`test/features/case_management/data/models/case_client_model_test.dart`)
+- [ ] Write `ClientModel` tests (`test/features/case_management/data/models/client_model_test.dart`)
+- [ ] Write `Case` UseCases tests (`test/features/case_management/domain/usecases/case_usecases_test.dart`)
+- [ ] Write `Client` UseCases tests (`test/features/case_management/domain/usecases/client_usecases_test.dart`)
+- [ ] Write `LocalDataSourceImpl` tests (`test/features/case_management/data/datasource/local_datasource_impl_test.dart`)
+- [ ] Write `RemoteDataSourceImpl` tests (`test/features/case_management/data/datasource/remote_datasource_impl_test.dart`)
+- [ ] Write `RepositoriesImpl` tests (`test/features/case_management/data/repositories/repositories_impl_test.dart`)
+- [ ] Run `flutter test` to verify all tests pass.

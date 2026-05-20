@@ -1,0 +1,74 @@
+# Adding Role-Based Access Control (RBAC)
+
+This document outlines the architectural changes required to introduce a role-based access system for your company using Supabase and Flutter. Based on your requirement, we need two user roles: `master` and `accountant`.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Please review the roles and their proposed permissions below to ensure they align with your business logic. 
+> - **Master:** Full access to all modules, can add/remove employees, can delete records (receipts, invoices, etc.), and view all settings.
+> - **Accountant:** Can manage daily operations (invoices, receipts, orders, expenses) but cannot manage employees or delete critical records.
+
+## Proposed Architecture & Changes
+
+### 1. Database Layer Updates (Supabase SQL)
+
+Currently, the `DB/employee.sql` table stores your users. We will modify it to include a `role` column.
+
+#### [MODIFY] `DB/employee.sql`
+- Add a new column to store the user's role.
+```sql
+ALTER TABLE employees 
+ADD COLUMN role TEXT NOT NULL DEFAULT 'accountant' 
+CHECK (role IN ('master', 'accountant'));
+```
+
+#### [MODIFY] Row-Level Security (RLS) Policies
+Update RLS policies across your tables (`clients`, `receipts`, `invoices`, etc.) to enforce permissions at the database level.
+- Example: Prevent accountants from deleting receipts.
+```sql
+CREATE POLICY "Prevent accountant from deleting receipts"
+ON receipts FOR DELETE
+TO authenticated
+USING (
+  (SELECT role FROM employees WHERE user_id = auth.uid()) = 'master'
+);
+```
+
+### 2. Frontend State Management (Flutter)
+
+We need to fetch and store the current user's role globally so the UI can adapt.
+
+#### [NEW] `lib/features/auth/presentation/provider/employee_provider.dart`
+- Create a new Riverpod provider that fetches the current employee's record (including their `role`) from the `employees` table whenever `authStateStream` emits a signed-in user.
+- This provider will expose an `EmployeeModel` with an `isMaster` getter.
+
+### 3. Frontend UI Updates (Flutter Features)
+
+We will use the new Riverpod provider to conditionally render UI components.
+
+#### [MODIFY] Navigation & Menus
+- Hide administrative sections (like "Employees" management or "Company Settings") from the navigation drawer/sidebar if the user is an `accountant`.
+```dart
+if (currentUser.role == 'master') 
+  NavigationItem(title: 'Employees', ...),
+```
+
+#### [MODIFY] Actions (Delete / Edit)
+- In lists or detail pages (e.g., `lib/features/receipts/...`, `lib/features/invoices/...`), hide the "Delete" button or "Edit" button if the action is restricted.
+```dart
+if (currentUser.role == 'master')
+  IconButton(icon: Icon(Icons.delete), onPressed: () => ...),
+```
+
+## Open Questions
+
+> [!NOTE]
+> All questions resolved. Accountant will only have view and "add" (INSERT) access across all modules (cannot edit or delete).
+
+## Verification Plan
+
+### Manual Verification
+1. Log in with a `master` account and verify access to employee management and delete actions.
+2. Log in with an `accountant` account and verify that restricted areas are hidden and delete actions are blocked.
+3. Attempt to bypass UI restrictions using direct Supabase API calls (if possible) to ensure RLS policies correctly block unauthorized `DELETE` operations.

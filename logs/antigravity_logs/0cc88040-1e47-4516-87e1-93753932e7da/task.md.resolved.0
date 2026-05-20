@@ -1,0 +1,5 @@
+- [/] Add `google_mobile_ads` dependency.
+- [ ] Configure `AndroidManifest.xml` with AdMob application ID.
+- [ ] Implement `AdService` with ad caching and testmode toggle.
+- [ ] Schedule AdMob initialization for after application startup.
+- [ ] Update `mission_page.dart` to show ads randomly after 3 phases and unconditionally after mission completion.

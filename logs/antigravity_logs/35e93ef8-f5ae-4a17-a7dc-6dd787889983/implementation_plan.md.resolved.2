@@ -1,0 +1,53 @@
+# Dart-Only Verification & Enhancement Plan
+
+## User Review Required
+
+To answer your question: if we remove the `flutter` SDK dependency from `pubspec.yaml` right now, the files inside `lib/src/widgets/` (like `shrink_wrap_text.dart`) and `lib/src/text_style_font.dart` will immediately break because they still use `import 'package:flutter/widgets.dart';`. Even if we don't export them in the main file, they are still inside the package source.
+
+**The Solution:** You are completely right that the main library logic doesn't use them! To safely remove the Flutter dependency and make the package purely Dart, we can simply **move** those widget files out of the package's `lib/src/` directory and put them directly into `example/lib/`. 
+
+This immediately achieves your goal: the root package becomes 100% pure Dart, and the example folder retains all the Flutter widgets!
+
+## Proposed Changes
+
+### 1. Make the Package 100% Pure Dart
+#### [MODIFY] `pubspec.yaml`
+- Remove `flutter` from `dependencies`.
+- Remove `flutter_test` from `dev_dependencies`.
+- Add the pure Dart `test` package to `dev_dependencies`.
+#### [DELETE] `lib/src/widgets/` and `lib/src/text_style_font.dart`
+- These will be completely removed from the root package.
+
+### 2. Relocate Widgets to Example App
+#### [NEW] `example/lib/widgets/` and `example/lib/text_style_font.dart`
+- Move the deleted Flutter widgets and the `TextStyleFont` wrapper here.
+#### [MODIFY] `example/lib/*.dart`
+- Update the examples to import the widgets from local folders (`import 'widgets/obstacle_text_flow.dart';`) instead of the library.
+
+### 3. Dart-Only Unit Tests
+#### [NEW] `test/layout_dart_only_test.dart`
+- Convert the existing tests to run on the standard `test` package without `TestWidgetsFlutterBinding`.
+- Create a `MockFont` that provides string measurement logic purely in Dart.
+
+### 4. PDF.dart Integration Example
+#### [MODIFY] `example/pubspec.yaml`
+- Add `pdf` package dependency.
+#### [NEW] `example/lib/pdf_integration_example.dart`
+- Show how to generate a PDF page and draw text on it by wrapping `pdf.dart`'s font metrics within our abstract `Font` interface. 
+
+### 5. Arabic Text Example
+#### [NEW] `example/lib/arabic_example.dart`
+- Create an example that tests the library's handling of right-to-left layout constraints using Arabic text.
+
+## Open Questions
+
+Does this approach sound perfect to you? If so, please approve the plan and I'll knock this all out!
+## Verification Plan
+
+### Automated Tests
+- Run `dart test` to ensure tests execute purely on the Dart VM without `flutter test`.
+- Ensure there are no compilation errors when importing the package into a pure Dart project.
+
+### Manual Verification
+- Generate a `.pdf` file via the new example and verify its visual layout.
+- Run the Arabic text example to ensure `characters` and `layout` engine correctly handle the RTL content.

@@ -1,0 +1,11 @@
+# Role-Based Access Control Implementation Tasks
+
+- `[x]` **Database Schema Update**
+  - `[x]` Add `role` column to `employees` table in `DB/employee.sql`
+  - `[x]` Create a new SQL script in `DB/` to define the RLS policies based on role (e.g. `DB/rbac_policies.sql`).
+- `[ ]` **Flutter State Management**
+  - `[ ]` Create `lib/features/auth/presentation/provider/employee_provider.dart` to fetch logged-in user's role.
+- `[ ]` **Flutter UI Updates**
+  - `[ ]` Ensure accountants cannot see the 'Delete' or 'Edit' options anywhere.
+  - `[ ]` Ensure accountants cannot manage employees.
+  - `[ ]` Update Navigation drawer/menus accordingly.

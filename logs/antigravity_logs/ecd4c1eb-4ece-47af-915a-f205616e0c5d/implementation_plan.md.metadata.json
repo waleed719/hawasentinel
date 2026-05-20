@@ -1,0 +1,7 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Implementation plan to update the ledger details page table format to include an info button for invoice/payment details, and to update the add invoice dialog to automatically mark fully invoiced orders as completed.",
+  "updatedAt":  "2026-05-04T11:56:06.524615522Z",
+  "version":  "1",
+  "requestFeedback":  true
+}

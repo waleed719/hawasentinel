@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "A detailed implementation plan for the new Invoicing Module. This covers the creation of the SQL schema, Invoice Entities, Repositories, Providers, and the UI components for generating and viewing invoices, updating ledgers upon payment, and printing PDFs.",
+  "updatedAt": "2026-04-27T17:03:01.326943468Z",
+  "requestFeedback": true
+}

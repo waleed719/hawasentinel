@@ -1,0 +1,34 @@
+# Account and Accounts Ledger Implementation Walkthrough
+
+The Account and Accounts Ledger module has been successfully implemented and integrated across the Ledgerly application to ensure correct double-entry tracking for cash and bank transactions. 
+
+## Features Implemented
+
+### 1. Database Integration
+We ran an SQL script to update the core backend functions ensuring they log into `account_transactions`:
+- `create_receipt`: Now accepts `p_account_id` and adds a `credit` transaction to the selected bank or cash account when a receipt is created.
+- `create_disbursement`: Now accepts `p_account_id` and adds a `debit` transaction to the selected account.
+- `create_expense`: A new RPC was added to atomically insert an expense and debit the selected cash/bank account.
+
+### 2. Account Ledger Module
+- **Domain & Data**: Built `AccountEntity` and `AccountTransactionEntity` with Freezed, complete with repository and remote datasource integrations to fetch live running balances directly calculated from `account_transactions`.
+- **Dashboard**: Added the "Accounts" module to the left sidebar navigation. The `AccountDashboard` gives a quick overview of all Bank and Cash accounts, with their dynamic real-time current balances and a badge indicating the account type.
+- **Details Drill-Down**: Selecting an account from the dashboard displays the `AccountDetailsPage`, showing a robust transaction history table. The table lists `Date, Remarks, Ref Type, Credit, Debit, Balance` for every transaction hitting that account.
+
+### 3. Workflow Integrations
+To enforce correct accounting principles, we updated the existing transaction dialogs to require selecting an account based on the payment mode:
+- **Receipts**: The `AddReceiptDialog` now splits payment methods cleanly into **Cash** and **Bank Transfer**. If 'Bank Transfer' is chosen, users must select an 'Online Transfer' or 'Cheque' and pick the exact bank account. The system validates and automatically passes the `accountId` to the database.
+- **Disbursements**: The `AddDisbursementDialog` enforces the same bank/cash selection workflow, debiting the specific account when a vendor payment is processed.
+- **Expenses**: The `AddExpenseDialog` now includes an account dropdown requiring the user to define exactly which account (typically Cash) the expense was paid from.
+
+## Summary of File Changes
+- **Database Scripts**: Created `DB/update_accounts_integration.sql` and updated Supabase functions.
+- **Account Ledger Module**: Created full feature stack under `lib/features/account_ledger`.
+- **Integrations**: Rewrote `add_receipt_dialog.dart`, `add_disbursement_dialog.dart`, and `add_expense_dialog.dart` to support account selection.
+- **Navigation**: Inserted the Accounts navigation button in `lib/sidebar.dart`.
+
+## Next Steps
+You can now build and run the application to test the Account Ledger module. You should be able to create new banks or cash accounts in your database, receive payments to them, and see the running balances update in real time on the Accounts dashboard.
+
+> [!TIP]
+> Ensure that your Supabase database has a few initial Accounts in the `ACCOUNTS` table (e.g., a standard "Cash" account and an "HBL" bank account) to test the dropdown selections in the receipt and expense forms.
