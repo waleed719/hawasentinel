@@ -4,7 +4,7 @@ import '../models/simulation_result.dart';
 
 class ApiService {
   // Use the local network IP so physical devices on the same WiFi can connect
-  static const String baseUrl = 'http://192.168.100.186:3000/api';
+  static const String baseUrl = 'http://51.20.56.63:3000/api';
 
   Future<SimulationResult?> runSimulation(String scenario) async {
     try {

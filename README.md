@@ -1,6 +1,6 @@
 # HawaSentinel: Agentic Atmospheric Crisis Response System
 
-![HawaSentinel Header](https://via.placeholder.com/1200x300?text=HawaSentinel+-+Agentic+Crisis+Management)
+![HawaSentinel Header](cover.jpeg)
 
 ## 📖 Overview
 HawaSentinel is an advanced, fully autonomous agentic platform designed to proactively manage atmospheric crises, specifically targeting the severe smog and deteriorating air quality prevalent in regions like Punjab, Pakistan. Rather than relying on simple thresholds, HawaSentinel leverages a multi-agent system powered by local Large Language Models (LLMs) to ingest real-time environmental data and autonomously make nuanced, domain-specific decisions. 
