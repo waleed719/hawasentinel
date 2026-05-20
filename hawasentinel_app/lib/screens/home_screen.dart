@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_state.dart';
@@ -33,11 +36,12 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _RunAgentsButton(appState: appState),
                   const SizedBox(height: 24),
-                  const _MiniStatRow(),
+                  const _DailyForecastGraph(),
                   const SizedBox(height: 24),
                   _AgentActionsSection(sim: sim),
                   const SizedBox(height: 24),
-                  const _ForecastCard(),
+                  // const _ForecastCard(),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -113,7 +117,9 @@ class _RunAgentsButton extends StatelessWidget {
         Expanded(
           flex: 2,
           child: GestureDetector(
-            onTap: isLoading ? null : () => appState.triggerSimulation('hazardous'),
+            onTap: isLoading
+                ? null
+                : () => appState.triggerSimulation('hazardous'),
             child: Container(
               height: 48,
               decoration: BoxDecoration(
@@ -130,14 +136,18 @@ class _RunAgentsButton extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.bolt_rounded,
-                    color: isLoading ? AppTheme.onSurfaceVariant : AppTheme.primary,
+                    color: isLoading
+                        ? AppTheme.onSurfaceVariant
+                        : AppTheme.primary,
                     size: 18,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     'Fast Replay',
                     style: GoogleFonts.inter(
-                      color: isLoading ? AppTheme.onSurfaceVariant : AppTheme.primary,
+                      color: isLoading
+                          ? AppTheme.onSurfaceVariant
+                          : AppTheme.primary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -222,7 +232,10 @@ class _TopAppBar extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppTheme.error,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.background, width: 1.5),
+                        border: Border.all(
+                          color: AppTheme.background,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -251,160 +264,135 @@ class _HeroAqiCard extends StatelessWidget {
     required this.isLoading,
   });
 
+  String _getAsset(int aqi) {
+    if (aqi <= 100) return 'assets/green.png';
+    if (aqi <= 200) return 'assets/yellow.png';
+    return 'assets/red.png';
+  }
+
+  Color _getBgColor(int aqi) {
+    if (aqi <= 100) return const Color(0xFFAFCD5D);
+    if (aqi <= 200) return const Color(0xFFA78426);
+    return const Color(0xFF3A0002); // Dark red
+  }
+
+  Color _getTextColor(int aqi) {
+    if (aqi <= 100) return const Color(0xFF14532D); // Dark green
+    if (aqi <= 200) return const Color(0xFF451A03); // Dark brown
+    return const Color(0xFFF96060); // Bright reddish pink
+  }
+
+  Color _getBadgeColor(int aqi) {
+    if (aqi <= 100) return const Color(0xFF22C55E);
+    if (aqi <= 200) return const Color(0xFFF59E0B);
+    return const Color(0xFFE14F4F);
+  }
+
+  String _getCategoryText(int aqi) {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final asset = _getAsset(aqi);
+    final bgColor = _getBgColor(aqi);
+    final textColor = _getTextColor(aqi);
+    final badgeColor = _getBadgeColor(aqi);
+    final secondaryTextColor = aqi <= 200
+        ? Colors.black87
+        : Colors.white.withValues(alpha: 0.9);
+
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF690005), Color(0xFF3A0002)],
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        image: DecorationImage(
+          image: AssetImage(asset),
+          fit: BoxFit.fitHeight,
+          opacity: 0.5,
+          alignment: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.errorContainer, width: 1),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Stack(
-        children: [
-          // Background watermark icon
-          Positioned(
-            right: -16,
-            bottom: -16,
-            child: Icon(
-              Icons.masks_outlined,
-              size: 180,
-              color: Colors.white.withValues(alpha: 0.08),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'CURRENT AQI',
-                      style: GoogleFonts.jetBrainsMono(
-                        color: AppTheme.error,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.error,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.warning_rounded,
-                            size: 13,
-                            color: AppTheme.onPrimary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            crisisLevel.toUpperCase(),
-                            style: GoogleFonts.jetBrainsMono(
-                              color: AppTheme.onPrimary,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      isLoading ? '--' : '$aqi',
-                      style: GoogleFonts.inter(
-                        color: AppTheme.error,
-                        fontSize: 64,
-                        fontWeight: FontWeight.w700,
-                        height: 1.0,
-                        letterSpacing: -2,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        'PM2.5: 287 μg/m³',
-                        style: GoogleFonts.inter(
-                          color: AppTheme.errorContainer,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  height: 1,
-                  color: AppTheme.errorContainer.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.thermostat,
-                      size: 16,
-                      color: AppTheme.errorContainer,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Feels like 48°C',
-                      style: GoogleFonts.jetBrainsMono(
-                        color: AppTheme.errorContainer,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.errorContainer,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.water_drop_outlined,
-                      size: 16,
-                      color: AppTheme.errorContainer,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Humidity 72%',
-                      style: GoogleFonts.jetBrainsMono(
-                        color: AppTheme.errorContainer,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: 20,
+          top: 20,
+          bottom: 20,
+          right: 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current AQI',
+              style: GoogleFonts.inter(
+                color: textColor.withValues(alpha: 0.8),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              isLoading ? '--' : '$aqi',
+              style: GoogleFonts.inter(
+                color: textColor,
+                fontSize:
+                    58, // slightly reduced to prevent wrapping on narrow screens
+                fontWeight: FontWeight.w800,
+                height: 1.0,
+                letterSpacing: -1.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: badgeColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                crisisLevel.toUpperCase(),
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'PM2.5 | ${_getCategoryText(aqi)}',
+              style: GoogleFonts.inter(
+                color: secondaryTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Feels like 48°C\nHumidity 72%',
+              style: GoogleFonts.inter(
+                color: secondaryTextColor.withValues(alpha: 0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -414,108 +402,209 @@ class _HeroAqiCard extends StatelessWidget {
 // Mini Stat Row
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _MiniStatRow extends StatelessWidget {
-  const _MiniStatRow();
+class _DailyForecastGraph extends StatefulWidget {
+  const _DailyForecastGraph();
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.air,
-            iconColor: AppTheme.primaryContainer,
-            label: 'Wind',
-            value: 'NE 14 km/h',
-            accentBottom: false,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.local_fire_department,
-            iconColor: AppTheme.tertiaryContainer,
-            label: 'Fires',
-            value: '23 Active',
-            accentBottom: true,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.visibility,
-            iconColor: AppTheme.onSurfaceVariant,
-            label: 'Visibility',
-            value: '0.8 km',
-            accentBottom: false,
-          ),
-        ),
-      ],
-    );
-  }
+  State<_DailyForecastGraph> createState() => _DailyForecastGraphState();
 }
 
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final String value;
-  final bool accentBottom;
+class _DailyForecastGraphState extends State<_DailyForecastGraph> {
+  bool _isLoading = true;
+  List<FlSpot> _spots = [];
+  List<String> _days = [];
 
-  const _StatCard({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.value,
-    required this.accentBottom,
-  });
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=31.558&longitude=74.3507&hourly=us_aqi',
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final hourly = data['hourly'];
+        final List<dynamic> times = hourly['time'];
+        final List<dynamic> aqis = hourly['us_aqi'];
+
+        Map<String, double> dailyMax = {};
+        for (int i = 0; i < times.length; i++) {
+          final timeStr = times[i] as String;
+          final date = timeStr.substring(0, 10);
+          final aqi = (aqis[i] as num?)?.toDouble() ?? 0.0;
+          if (!dailyMax.containsKey(date) || aqi > dailyMax[date]!) {
+            dailyMax[date] = aqi;
+          }
+        }
+
+        final sortedDates = dailyMax.keys.toList()..sort();
+        List<FlSpot> spots = [];
+        List<String> days = [];
+        for (int i = 0; i < sortedDates.length && i < 7; i++) {
+          final date = sortedDates[i];
+          final aqi = dailyMax[date]!;
+          spots.add(FlSpot(i.toDouble(), aqi));
+          // parse short weekday
+          final parsedDate = DateTime.parse(date);
+          final weekday = [
+            'Mon',
+            'Tue',
+            'Wed',
+            'Thu',
+            'Fri',
+            'Sat',
+            'Sun',
+          ][parsedDate.weekday - 1];
+          days.add(weekday);
+        }
+
+        if (mounted) {
+          setState(() {
+            _spots = spots;
+            _days = days;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ClipRRect so the bottom accent respects rounded corners.
-    // Border.all (uniform) avoids the non-uniform-color + borderRadius crash.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Stack(
+    if (_isLoading) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFF111827),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF1F2937)),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_spots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      height: 220,
+      padding: const EdgeInsets.only(top: 20, bottom: 16, left: 16, right: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF1F2937)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF111827),
-              border: Border.all(color: const Color(0xFF1F2937)),
-            ),
-            child: Column(
-              children: [
-                Icon(icon, color: iconColor, size: 24),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.jetBrainsMono(
-                    color: AppTheme.onSurfaceVariant,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    color: AppTheme.onSurface,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text(
+              'Daily Forecast (Max AQI)',
+              style: GoogleFonts.inter(
+                color: AppTheme.onSurface,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          if (accentBottom)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(height: 3, color: AppTheme.tertiaryContainer),
+          const SizedBox(height: 24),
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: AppTheme.outlineVariant.withValues(alpha: 0.2),
+                    strokeWidth: 1,
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          value.toInt().toString(),
+                          style: GoogleFonts.jetBrainsMono(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 10,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= 0 && index < _days.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _days[index],
+                              style: GoogleFonts.jetBrainsMono(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 10,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: _spots,
+                    isCurved: true,
+                    color: AppTheme.primary,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: AppTheme.primary,
+                          strokeWidth: 2,
+                          strokeColor: const Color(0xFF111827),
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: AppTheme.primary.withValues(alpha: 0.1),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
         ],
       ),
     );
@@ -675,7 +764,10 @@ class _ActionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBg.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(4),
@@ -727,7 +819,8 @@ class _PulseDot extends StatefulWidget {
   State<_PulseDot> createState() => _PulseDotState();
 }
 
-class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixin {
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _anim;
 
@@ -738,9 +831,10 @@ class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixi
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _anim = Tween<double>(
+      begin: 0.3,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override

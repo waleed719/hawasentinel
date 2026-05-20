@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'home_screen.dart' hide Column;
+import 'home_screen.dart';
 import 'agents_screen.dart';
 import 'alerts_screen.dart';
 import 'analytics_screen.dart';
@@ -29,17 +29,17 @@ class _MainLayoutState extends State<MainLayout> {
   // Stitch nav icons: home, psychology, notifications, bar_chart
   static const _navIcons = [
     Icons.home_outlined,
-    Icons.psychology_outlined,
+    Icons.smart_toy_outlined,
     Icons.notifications_outlined,
     Icons.bar_chart_outlined,
   ];
   static const _navIconsFilled = [
     Icons.home,
-    Icons.psychology,
+    Icons.smart_toy,
     Icons.notifications,
     Icons.bar_chart,
   ];
-  static const _navLabels = ['Home', 'Agents', 'Alerts', 'Analytics'];
+  // static const _navLabels = ['Home', 'Agents', 'Alerts', 'Analytics'];
 
   @override
   Widget build(BuildContext context) {
@@ -55,41 +55,54 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      extendBody: true,
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: _buildBottomNav(hasAlerts),
     );
   }
 
   Widget _buildBottomNav(bool hasAlerts) {
-    return Container(
-      decoration: const BoxDecoration(
-        // matches bento-card bg from Stitch: surface-container #19211E
-        color: AppTheme.surfaceContainer,
-        border: Border(
-          top: BorderSide(color: AppTheme.outlineVariant, width: 1),
+    return Padding(
+      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: AppTheme.outlineVariant, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          // Stitch uses h-20 = 80px
-          height: 80,
-          child: Row(
-            children: List.generate(4, (i) {
-              final isSelected = i == _currentIndex;
-              final color = isSelected
-                  ? AppTheme.primary
-                  : AppTheme.onSurfaceVariant;
-              return Expanded(
-                child: InkWell(
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(4, (i) {
+                final isSelected = i == _currentIndex;
+                final color = isSelected
+                    ? AppTheme.primary
+                    : AppTheme.onSurfaceVariant;
+                return GestureDetector(
                   onTap: () => setState(() => _currentIndex = i),
-                  splashColor: AppTheme.primary.withValues(alpha: 0.1),
-                  highlightColor: Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Stack(
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppTheme.primary.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Stack(
                         clipBehavior: Clip.none,
                         children: [
                           Icon(
@@ -113,22 +126,11 @@ class _MainLayoutState extends State<MainLayout> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _navLabels[i],
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 11,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                          color: color,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),
